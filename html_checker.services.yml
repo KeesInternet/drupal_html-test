@@ -1,0 +1,5 @@
+services:
+  html_checker:
+    class: '\Drupal\html_checker\EventSubscriber\HtmlCheckEventSubscriber'
+    tags:
+      - { name: 'event_subscriber' }
