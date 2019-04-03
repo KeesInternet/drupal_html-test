@@ -3,3 +3,7 @@ services:
     class: '\Drupal\html_checker\EventSubscriber\HtmlCheckEventSubscriber'
     tags:
       - { name: 'event_subscriber' }
+  test_html:
+    class: '\Drupal\html_checker\TestHtml'
+    tags:	
+      - { name: 'test_html' }
