@@ -4,11 +4,11 @@ namespace Drupal\html_checker;
 use DOMDocument;
 
 /**
- * Short description for file
+ * Test the HTML sourc of the current page
  *
  * PHP version 7
  *
- * Description of what this module (or file) is doing. Description of what this module (or file) is doing.
+ * Test the HTML source of the current page on W3C validation, accessability, Structured data (if present), custom checks, and pagespeed.
  *
  * @category HTML
  * @package  TestHtml
@@ -18,8 +18,9 @@ use DOMDocument;
  */
 class TestHtml
 {
-    /*
-     *
+    /**
+     * Test the HTML sourc of the current page
+     * 
      * @return void
      */
     public function __construct()
