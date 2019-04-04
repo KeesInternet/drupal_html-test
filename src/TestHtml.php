@@ -18,9 +18,9 @@ use DOMDocument;
  */
 class TestHtml
 {
-    /**
+    /*
      * Test the HTML sourc of the current page
-     * 
+     *
      * @return void
      */
     public function __construct()
@@ -344,12 +344,17 @@ class TestHtml
                     } elseif (isset($node["sub_structure"][0]["headings"])) {
                         // $list.= "<li>Multiple headings:</li>";
                         $list.= $this->_showStructure($node["sub_structure"]);
+                    } elseif (isset($node["sub_structure"][0])) {
+                        // $list.= "<li>More substructure:</li>";
+                        $list.= $this->_showStructure($node["sub_structure"]);
                     }
                     $list.= "</ul>";
                     $list.= "</li>";
-                } elseif (isset($node["headings"])) {
-                    foreach ($node["headings"] as $heading) {
-                        $list.= "<li style='color:green'>".$heading["selector"]." <i>".($heading["value"]? $heading["value"] : "-empty-")."</i></li>";
+                } elseif ("headings" == $key && isset($node[0])) {
+                    foreach ($node as $heading) {
+                        if (isset($heading["selector"])) {
+                            $list.= "<li style='color:green'>".$heading["selector"]." <i>".($heading["value"]? $heading["value"] : "-empty-")."</i></li>";
+                        }
                     }
                     // $list.= "<li>Elements after heading:</li>";
                     $list.= $this->_showStructure($node);
