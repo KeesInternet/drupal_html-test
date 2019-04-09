@@ -18,6 +18,7 @@ use DOMDocument;
  */
 class TestHtml
 {
+    var $accessibility_checker_webservice_id = "";
     /*
      * Test the HTML sourc of the current page
      *
@@ -146,25 +147,26 @@ class TestHtml
      */
     private function _accessabilityChecker($uri)
     {
-        $web_service_id = "d57cb24c0f3a18f7674f2a12d26062409f75272d";
-        $result = $this->_curl("https://achecker.ca/checkacc.php?uri=".$uri."&id=".$web_service_id."&output=rest&guide=WCAG2-AA");
-        $xml = simplexml_load_string($result, "SimpleXMLElement", LIBXML_NOCDATA);
-        $json = json_encode($xml);
-        $array = json_decode($json, true);
-        $status = $array["summary"]["status"];
-        $message = "<h2>Accessability (guideline ".$array["summary"]["guidelines"]["guideline"].") status: <span style='color:".("FAIL" == $status? "red":"green")."'>".$status."</span></h2>";
-        $messages = "";
-        if (isset($array["results"]["result"])) {
-            foreach ($array["results"]["result"] as $result) {
-                if ("Error" == $result["resultType"]) {
-                    $messages.= "<li style='color:red'>".$result["errorMsg"].": <i>".htmlspecialchars($result["errorSourceCode"])."</i></li>";
+        if (!empty($this->accessibility_checker_webservice_id)) {
+            $result = $this->_curl("https://achecker.ca/checkacc.php?uri=".$uri."&id=".$this->accessibility_checker_webservice_id."&output=rest&guide=WCAG2-AA");
+            $xml = simplexml_load_string($result, "SimpleXMLElement", LIBXML_NOCDATA);
+            $json = json_encode($xml);
+            $array = json_decode($json, true);
+            $status = $array["summary"]["status"];
+            $message = "<h2>Accessability (guideline ".$array["summary"]["guidelines"]["guideline"].") status: <span style='color:".("FAIL" == $status? "red":"green")."'>".$status."</span></h2>";
+            $messages = "";
+            if (isset($array["results"]["result"])) {
+                foreach ($array["results"]["result"] as $result) {
+                    if ("Error" == $result["resultType"]) {
+                        $messages.= "<li style='color:red'>".$result["errorMsg"].": <i>".htmlspecialchars($result["errorSourceCode"])."</i></li>";
+                    }
                 }
             }
+            if ($messages) {
+                $message.= "<ul>".$messages."</ul>";
+            }
+            return $message;
         }
-        if ($messages) {
-            $message.= "<ul>".$messages."</ul>";
-        }
-        return $message;
     }
 
     /**
