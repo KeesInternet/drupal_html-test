@@ -1,0 +1,7 @@
+html_checker.settings:
+  
+  title: 'KeesTM HTML checker'
+  description: Validate HTML source of the page you're on
+  route_name: html_checker.settings
+  
+  parent: 'system.admin_config_development'

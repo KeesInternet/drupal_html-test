@@ -1,7 +1,8 @@
 name: HTML Checker
-description: Adds the ability to check pages on HTML validation
-package: Validation
+description: Validate HTML source of the page you're on
+package: Custom
 type: module
-version: '8.x-0.1'
-core: '8.x'
-project: 'html_checker'
+version: 1.0.1
+core: 8.x
+dependences:
+  - field

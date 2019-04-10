@@ -24,10 +24,12 @@ class HtmlCheckEventSubscriber implements EventSubscriberInterface
     /**
      * Code that should be triggered on event specified
      */
-    public function onRespond(FilterResponseEvent $event) {
+    public function onRespond(FilterResponseEvent $event)
+    {
 
         if (isset($_GET['test_html']) && 1 == \Drupal::currentUser()->id()) {
-            new TestHtml();
+            $config = \Drupal::config('html_checker.settings');
+            new TestHtml($config->get('accessibility_webservice_id'), $config->get('accessibility_guides'));
         }
     }
 

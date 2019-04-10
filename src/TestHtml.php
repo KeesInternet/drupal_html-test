@@ -18,17 +18,28 @@ use DOMDocument;
  */
 class TestHtml
 {
-    var $accessibility_checker_webservice_id = "";
+    protected $accessibility_checker_webservice_id = "";
+    protected $accessibility_guides = "WCAG2-AA";
     /*
      * Test the HTML sourc of the current page
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($accessibility_checker_webservice_id = "", $accessibility_guides = "")
     {
         error_reporting(E_ALL);
         ini_set('display_errors', 1);
         if (isset($_GET['test_html'])) {
+            if (!empty($accessibility_checker_webservice_id)) {
+                $this->accessibility_checker_webservice_id = $accessibility_checker_webservice_id;
+            }
+            if (!empty($accessibility_guides)) {
+                $this->accessibility_guides = implode(",", $accessibility_guides);
+            }
+            // Override accessibility_guides with get value if present
+            if (isset($_GET["accessibility_guides"]) && !empty($_GET["accessibility_guides"])) {
+                $this->accessibility_guides = $_GET["accessibility_guides"];
+            }
             //no trailing slash!
             $domain = "http".( "on" == $_SERVER["HTTPS"] ? "s" : "" )."://".$_SERVER["SERVER_NAME"];
             //Use URL per template specific testing!
@@ -67,8 +78,8 @@ class TestHtml
     {
         $messages = "<ul>";
         $result = $this->_curl('https://validator.w3.org/nu/?out=json&doc='.$test_uri);
-        $array = json_decode($result, true);
-        foreach ($array["messages"] as $key => $message) {
+        $results = json_decode($result, true);
+        foreach ($results["messages"] as $key => $message) {
             //only show errors if an actual message is present!
             $messages.= (!empty($message["message"])? "<li style='color: red'>".$message["message"].(!empty($message['extract'])? ": <i>".htmlspecialchars($message['extract']) : "")."</i></li>" : "");
         }
@@ -81,7 +92,6 @@ class TestHtml
      *
      * @param string  $url we're about to cURL
      * @param string  $data_string data to post
-     * @param boolean $set_cookie to pass cookiewalls etc.
      * @param boolean $get_http_status to only return the HTTP status of the url
      *
      * @return mixed
@@ -94,7 +104,7 @@ class TestHtml
      * this->_testStructuredData()
      * this->_isDeadLink()
      */
-    private function _curl($url, $data_string = "", $set_cookie = "", $get_http_status = "")
+    private function _curl($url, $data_string = "", $get_http_status = "")
     {
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);
@@ -120,10 +130,6 @@ class TestHtml
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($curl, CURLOPT_VERBOSE, true);
         curl_setopt($curl, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17');
-        //Pass the KEES tm cookiewall
-        if ($set_cookie) {
-            curl_setopt($curl, CURLOPT_HTTPHEADER, array("Cookie: cookiewall=accept"));
-        }
         $return_data = curl_exec($curl);
         // Check for errors and display the error message
         if ($errno = curl_errno($curl)) {
@@ -148,17 +154,24 @@ class TestHtml
     private function _accessabilityChecker($uri)
     {
         if (!empty($this->accessibility_checker_webservice_id)) {
-            $result = $this->_curl("https://achecker.ca/checkacc.php?uri=".$uri."&id=".$this->accessibility_checker_webservice_id."&output=rest&guide=WCAG2-AA");
+            $result = $this->_curl("https://achecker.ca/checkacc.php?uri=".$uri."&id=".$this->accessibility_checker_webservice_id."&output=rest&guide=".$this->accessibility_guides);
             $xml = simplexml_load_string($result, "SimpleXMLElement", LIBXML_NOCDATA);
             $json = json_encode($xml);
-            $array = json_decode($json, true);
-            $status = $array["summary"]["status"];
-            $message = "<h2>Accessability (guideline ".$array["summary"]["guidelines"]["guideline"].") status: <span style='color:".("FAIL" == $status? "red":"green")."'>".$status."</span></h2>";
+            $results = json_decode($json, true);
+            $status = $results["summary"]["status"];
+            $guideline = (is_array($results["summary"]["guidelines"]["guideline"])? implode(", ", $results["summary"]["guidelines"]["guideline"]) : $results["summary"]["guidelines"]["guideline"]);
+            $message = "<h2>Accessability (guideline ". $guideline .") status: <span style='color:".("FAIL" == $status? "red":"green")."'>".$status."</span></h2>";
             $messages = "";
-            if (isset($array["results"]["result"])) {
-                foreach ($array["results"]["result"] as $result) {
-                    if ("Error" == $result["resultType"]) {
-                        $messages.= "<li style='color:red'>".$result["errorMsg"].": <i>".htmlspecialchars($result["errorSourceCode"])."</i></li>";
+            if (isset($results["results"]["result"])) {
+                if (isset($results["results"]["result"][0])) {
+                    foreach ($results["results"]["result"] as $result) {
+                        if ("Error" == $result["resultType"]) {
+                            $messages.= "<li style='color:red'>".$result["errorMsg"].": <i>".htmlspecialchars($result["errorSourceCode"])."</i></li>";
+                        }
+                    }
+                } else {
+                    if ("Error" == $results["results"]["result"]["resultType"]) {
+                        $messages = "<li style='color:red'>".$results["results"]["result"]["errorMsg"].": <i>".htmlspecialchars($results["results"]["result"]["errorSourceCode"])."</i></li>";
                     }
                 }
             }
@@ -184,7 +197,7 @@ class TestHtml
         if ($this->_isDeadLink($domain, $test_uri)) {
             return false;
         } else {
-            $html_source = $this->_curl($domain.$test_uri, false, true);
+            $html_source = $this->_curl($domain.$test_uri, false);
             libxml_use_internal_errors(true);
             $dom_obj = new DOMDocument();
             $dom_obj->loadHTML($html_source);
@@ -211,7 +224,7 @@ class TestHtml
     {
         //Check if it's a  local or remote (or even protocol relative!) URL so we can see if the content actually exists
         $url = (strstr($url, "http")? "": (preg_match("#^\/\/#", $url)? "https:": $domain)).$url;
-        $http_status = $this->_curl($url, false, false, true);
+        $http_status = $this->_curl($url, false, true);
         if (!in_array($http_status, ["200", "301", "302"])) {
             return true;
         } else {
@@ -910,8 +923,8 @@ class TestHtml
         }
         if ($snippets) {
             $result = $this->_curl("http://linter.structured-data.org/", json_encode(array("content" => $snippets)));
-            $array = json_decode($result, true);
-            foreach ($array['messages'] as $message) {
+            $results = json_decode($result, true);
+            foreach ($results['messages'] as $message) {
                 $messages.= "<li style='color:red'>".$message."</li>";
             }
             if ($messages) {
