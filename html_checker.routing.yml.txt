@@ -1,0 +1,7 @@
+﻿html_checker.settings:
+  path: '/admin/config/development/html-checker'
+  defaults:
+    _form: '\Drupal\html_checker\Form\HtmlCheckerSettingsForm'
+    _title: "Validate HTML source of the page you're on"
+  requirements:
+    _permission: 'access content'

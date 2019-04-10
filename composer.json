@@ -1,5 +1,5 @@
 {
-    "name": "keestm/html-test",
+    "name": "kees-tm/html-test",
     "description": "A Drupal 8 module that adds the ability to check pages on HTML validation",
     "type": "drupal-module",
     "license": "MIT",
