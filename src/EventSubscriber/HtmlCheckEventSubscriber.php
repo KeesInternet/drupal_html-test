@@ -35,7 +35,8 @@ class HtmlCheckEventSubscriber implements EventSubscriberInterface
               'check_nav_active_state' => $config->get('check_nav_active_state'),
               'check_meta_msapplication' => $config->get('check_meta_msapplication'),
               'check_meta_og' => $config->get('check_meta_og'),
-              'check_form_validation_classes' => $config->get('check_form_validation_classes')
+              'check_form_validation_classes' => $config->get('check_form_validation_classes'),
+              'test_pagespeed' => $config->get('test_pagespeed')
             );
             new TestHtml($parameters);
         }
