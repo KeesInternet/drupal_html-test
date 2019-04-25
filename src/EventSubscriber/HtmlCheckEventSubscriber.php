@@ -29,7 +29,15 @@ class HtmlCheckEventSubscriber implements EventSubscriberInterface
 
         if (isset($_GET['test_html']) && 1 == \Drupal::currentUser()->id()) {
             $config = \Drupal::config('html_checker.settings');
-            new TestHtml($config->get('accessibility_webservice_id'), $config->get('accessibility_guides'));
+            $parameters = array(
+              'accessibility_webservice_id' => $config->get('accessibility_webservice_id'),
+              'accessibility_guides' => $config->get('accessibility_guides'),
+              'check_nav_active_state' => $config->get('check_nav_active_state'),
+              'check_meta_msapplication' => $config->get('check_meta_msapplication'),
+              'check_meta_og' => $config->get('check_meta_og'),
+              'check_form_validation_classes' => $config->get('check_form_validation_classes')
+            );
+            new TestHtml($parameters);
         }
     }
 
