@@ -20,21 +20,41 @@ class TestHtml
 {
     protected $accessibility_checker_webservice_id = "";
     protected $accessibility_guides = "WCAG2-AA";
+    protected $check_nav_active_state = true;
+    protected $check_meta_msapplication = true;
+    protected $check_meta_og = true;
+    protected $check_form_validation_classes = true;
+    protected $test_pagespeed = true;
     /*
      * Test the HTML sourc of the current page
      *
      * @return void
      */
-    public function __construct($accessibility_checker_webservice_id = "", $accessibility_guides = "")
+    public function __construct($parameters = array())
     {
         error_reporting(E_ALL);
         ini_set('display_errors', 1);
         if (isset($_GET['test_html'])) {
-            if (!empty($accessibility_checker_webservice_id)) {
-                $this->accessibility_checker_webservice_id = $accessibility_checker_webservice_id;
+            if (isset($parameters['accessibility_webservice_id']) && !empty($parameters['accessibility_webservice_id'])) {
+                $this->accessibility_checker_webservice_id = $parameters['accessibility_webservice_id'];
             }
-            if (!empty($accessibility_guides)) {
-                $this->accessibility_guides = implode(",", $accessibility_guides);
+            if (isset($parameters['accessibility_guides']) && !empty($parameters['accessibility_guides'])) {
+                $this->accessibility_guides = implode(",", $parameters['accessibility_guides']);
+            }
+            if (isset($parameters['check_nav_active_state']) && !empty($parameters['check_nav_active_state'])) {
+                $this->check_nav_active_state = $parameters['check_nav_active_state'];
+            }
+            if (isset($parameters['check_meta_msapplication']) && !empty($parameters['check_meta_msapplication'])) {
+                $this->check_meta_msapplication = $parameters['check_meta_msapplication'];
+            }
+            if (isset($parameters['check_meta_og']) && !empty($parameters['check_meta_og'])) {
+                $this->check_meta_og = $parameters['check_meta_og'];
+            }
+            if (isset($parameters['check_form_validation_classes']) && !empty($parameters['check_form_validation_classes'])) {
+                $this->check_form_validation_classes = $parameters['check_form_validation_classes'];
+            }
+            if (isset($parameters['test_pagespeed']) && !empty($parameters['test_pagespeed'])) {
+                $this->test_pagespeed = $parameters['test_pagespeed'];
             }
             // Override accessibility_guides with get value if present
             if (isset($_GET["accessibility_guides"]) && !empty($_GET["accessibility_guides"])) {
@@ -57,7 +77,9 @@ class TestHtml
             } else {
                 $table_data.= $this->_checkSource($dom_obj, $domain, $html_source);
             }
-            $table_data.= $this->_testPagespeed($domain.$test_uri);
+            if ($this->test_pagespeed) {
+                $table_data.= $this->_testPagespeed($domain.$test_uri);
+            }
             $table_data.= "</td>";
             $table = "<table cellpadding='10' border='1'><tr>".$table_headers."</tr><tr>".$table_data."</tr></table>";
             echo $table;
@@ -249,7 +271,9 @@ class TestHtml
         $messages.= "<ul>";
         $messages.= $this->_checkSingleH1($dom_obj);
         //Check for active states in main- & sub-nav!
-        $messages.= $this->_checkNavActiveStates($dom_obj);
+        if ($this->check_nav_active_state) {
+            $messages.= $this->_checkNavActiveStates($dom_obj);
+        }
         //Check favicon & css tags
         $messages.= $this->_checkLinkTags($domain, $dom_obj);
         //Check description- msapplications- & OG-tags
@@ -259,7 +283,9 @@ class TestHtml
         //Check images (src & alt)
         $messages.= $this->_checkImgTags($domain, $dom_obj);
         //Check forms for validation classes (jQuery validate)
-        $messages.= $this->_checkFormValidation($dom_obj);
+        if ($this->check_form_validation_classes) {
+            $messages.= $this->_checkFormValidation($dom_obj);
+        }
         //Check Detectify measures
         $messages.= $this->_checkDetectifyMeasures($domain, $dom_obj);
         //Find stray (non inline javascript) twig/EE tags
@@ -590,14 +616,14 @@ class TestHtml
                 $this->_getMetaContent($meta_tag, $meta_content_message, $good);
             }
             //meta msapplications tags
-            if (preg_match("#msapplication#is", $meta_tag->getAttribute("name"))) {
+            if (preg_match("#msapplication#is", $meta_tag->getAttribute("name")) && $this->check_meta_msapplication) {
                 $meta_tag_message = "Meta ".$meta_tag->getAttribute("name")." tag found: ";
                 $meta_app_found = true;
                 $good = true;
                 $this->_getMetaContent($meta_tag, $meta_content_message, $good);
             }
             //meta OG tags
-            if (preg_match("#^og:#is", $meta_tag->getAttribute("property"))) {
+            if (preg_match("#^og:#is", $meta_tag->getAttribute("property")) && $this->check_meta_og) {
                 $meta_tag_message = "Meta ".$meta_tag->getAttribute("property")." tag found: ";
                 $meta_og_found = true;
                 $good = true;
