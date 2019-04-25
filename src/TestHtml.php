@@ -41,23 +41,23 @@ class TestHtml
             if (isset($parameters['accessibility_guides']) && !empty($parameters['accessibility_guides'])) {
                 $this->accessibility_guides = implode(",", $parameters['accessibility_guides']);
             }
-            if (isset($parameters['check_nav_active_state']) && !empty($parameters['check_nav_active_state'])) {
+            if (isset($parameters['check_nav_active_state']) && is_numeric($parameters['check_nav_active_state'])) {
                 $this->check_nav_active_state = $parameters['check_nav_active_state'];
             }
-            if (isset($parameters['check_meta_msapplication']) && !empty($parameters['check_meta_msapplication'])) {
+            if (isset($parameters['check_meta_msapplication']) && is_numeric($parameters['check_meta_msapplication'])) {
                 $this->check_meta_msapplication = $parameters['check_meta_msapplication'];
             }
-            if (isset($parameters['check_meta_og']) && !empty($parameters['check_meta_og'])) {
+            if (isset($parameters['check_meta_og']) && is_numeric($parameters['check_meta_og'])) {
                 $this->check_meta_og = $parameters['check_meta_og'];
             }
-            if (isset($parameters['check_form_validation_classes']) && !empty($parameters['check_form_validation_classes'])) {
+            if (isset($parameters['check_form_validation_classes']) && is_numeric($parameters['check_form_validation_classes'])) {
                 $this->check_form_validation_classes = $parameters['check_form_validation_classes'];
             }
-            if (isset($parameters['test_pagespeed']) && !empty($parameters['test_pagespeed'])) {
+            if (isset($parameters['test_pagespeed']) && is_numeric($parameters['test_pagespeed'])) {
                 $this->test_pagespeed = $parameters['test_pagespeed'];
             }
             // Override accessibility_guides with get value if present
-            if (isset($_GET["accessibility_guides"]) && !empty($_GET["accessibility_guides"])) {
+            if (isset($_GET["accessibility_guides"]) && is_numeric($_GET["accessibility_guides"])) {
                 $this->accessibility_guides = $_GET["accessibility_guides"];
             }
             //no trailing slash!
@@ -641,12 +641,12 @@ class TestHtml
             $meta_tags_good = false;
             $good = false;
         }
-        if (!$meta_og_found) {
+        if (!$meta_og_found && $this->check_meta_og) {
             $meta_tag_messages.= "<li style='color:red'><strong>Meta OG</strong> tag NOT present</li>";
             $meta_tags_good = false;
             $good = false;
         }
-        if (!$meta_app_found) {
+        if (!$meta_app_found && $this->check_meta_msapplication) {
             $meta_tag_messages.= "<li style='color:red'><strong>Meta msapplication</strong> tag NOT present</li>";
             $meta_tags_good = false;
             $good = false;
