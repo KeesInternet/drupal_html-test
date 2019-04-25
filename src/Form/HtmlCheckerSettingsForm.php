@@ -138,6 +138,7 @@ class HtmlCheckerSettingsForm extends ConfigFormBase
         ->set('check_meta_msapplication', $form_state->getValue('check_meta_msapplication'))
         ->set('check_form_validation_classes', $form_state->getValue('check_form_validation_classes'))
         ->set('check_meta_og', $form_state->getValue('check_meta_og'))
+        ->set('test_pagespeed', $form_state->getValue('test_pagespeed'))
         ->save();
     }
 }
