@@ -81,6 +81,7 @@ class TestHtml
                 $table_data.= $this->_testPagespeed($domain.$test_uri);
             }
             $table_data.= "</td>";
+            $table_data.= $this->_getServerVariables();
             $table = "<table cellpadding='10' border='1'><tr>".$table_headers."</tr><tr>".$table_data."</tr></table>";
             echo $table;
             die();
@@ -1023,5 +1024,22 @@ class TestHtml
             $feedback.= "<ul>".$error."</ul>";
         }
         return $feedback;
+    }
+
+    /**
+     * Get commonly used server variables
+     *
+     * @return string list of commonly user server variables
+     */
+    private function _getServerVariables()
+    {
+        $table_data = "<h2>Server variables</h2>";
+        $table_data.= "</h2>";
+        $table_data.= "<ul>";
+        $table_data.= "<li>Max execution time: ".ini_get('max_execution_time')."</li>";
+        $table_data.= "<li>Memory limit: ".ini_get('memory_limit')."</li>";
+        $table_data.= "<li>Post max size: ".ini_get('post_max_size')."</li>";
+        $table_data.= "</ul>";
+        return $table_data;
     }
 }
